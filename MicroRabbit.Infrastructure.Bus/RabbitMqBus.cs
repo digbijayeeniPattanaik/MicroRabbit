@@ -110,20 +110,23 @@ namespace MicroRabbit.Infrastructure.Bus
         {
             if (_handlers.ContainsKey(eventName))
             {
-                var subscriptions = _handlers[eventName];
-                foreach (var subcription in subscriptions)
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    var handler = Activator.CreateInstance(subcription);
+                    var subscriptions = _handlers[eventName];
+                    foreach (var subcription in subscriptions)
+                    {
+                        var handler = scope.ServiceProvider.GetService(subcription);
 
-                    if (handler == null) continue;
+                        if (handler == null) continue;
 
-                    var eventType = _eventTypes.SingleOrDefault(a => a.Name == eventName);
+                        var eventType = _eventTypes.SingleOrDefault(a => a.Name == eventName);
 
-                    var @event = JsonConvert.DeserializeObject(message, eventType);
+                        var @event = JsonConvert.DeserializeObject(message, eventType);
 
-                    var concreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
+                        var concreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
 
-                    await (Task)concreteType.GetMethod("Handle").Invoke(handler, new object[] { @event });
+                        await (Task)concreteType.GetMethod("Handle").Invoke(handler, new object[] { @event });
+                    }
                 }
             }
         }
