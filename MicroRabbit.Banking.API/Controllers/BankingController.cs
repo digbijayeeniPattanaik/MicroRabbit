@@ -32,6 +32,7 @@ namespace MicroRabbit.Banking.API.Controllers
         [HttpPost]
         public ActionResult<IEnumerable<Account>> Post([FromBody] AccountTransfer accountTransfer)
         {
+            _accountService.Transfer(accountTransfer);
             return Ok(accountTransfer);
         }
     }
