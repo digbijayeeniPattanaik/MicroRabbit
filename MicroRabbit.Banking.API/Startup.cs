@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediatR;
 using MicroRabbit.Banking.Data;
 using MicroRabbit.Infra.IoC;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Swashbuckle.Swagger;
 
 namespace MicroRabbit.Banking.API
 {
@@ -34,6 +36,13 @@ namespace MicroRabbit.Banking.API
             });
             services.AddControllers();
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSwaggerGen(a =>
+            {
+                a.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Banking MicroService", Version = "v1" });
+            });
+
+            services.AddMediatR(typeof(Startup));
             RegisterServices(services);
         }
 
@@ -51,6 +60,12 @@ namespace MicroRabbit.Banking.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(a=> {
+                a.SwaggerEndpoint("/swagger/v1/swagger.json", "Banking Microservice V1");
+            });
 
             app.UseRouting();
 
